@@ -88,6 +88,7 @@ class ReactExoplayerView extends FrameLayout implements
     private boolean isPaused = true;
     private boolean isBuffering;
     private float rate = 1f;
+    private boolean firstIteration = true;
 
     // Props from React
     private Uri srcUri;
@@ -214,6 +215,11 @@ class ReactExoplayerView extends FrameLayout implements
 
             PlaybackParameters params = new PlaybackParameters(rate, 1f);
             player.setPlaybackParameters(params);
+        } else {
+            if (firstIteration && isPaused == player.getPlayWhenReady()) {
+                setPlayWhenReady(!isPaused);
+                firstIteration = false;
+            }
         }
         if (playerNeedsSource && srcUri != null) {
             MediaSource mediaSource = buildMediaSource(srcUri, extension);
