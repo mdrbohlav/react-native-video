@@ -188,6 +188,9 @@ static NSString *const timedMetadata = @"timedMetadata";
    CMTime currentTime = _player.currentTime;
    const Float64 duration = CMTimeGetSeconds(playerDuration);
    const Float64 currentTimeSecs = CMTimeGetSeconds(currentTime);
+
+   [[NSNotificationCenter defaultCenter] postNotificationName:@"RCTVideo_progress" object:nil userInfo:@{@"progress": [NSNumber numberWithDouble: currentTimeSecs / duration]}];
+
    if( currentTimeSecs >= 0 && self.onVideoProgress) {
       self.onVideoProgress(@{
                              @"currentTime": [NSNumber numberWithFloat:CMTimeGetSeconds(currentTime)],
@@ -195,7 +198,7 @@ static NSString *const timedMetadata = @"timedMetadata";
                              @"atValue": [NSNumber numberWithLongLong:currentTime.value],
                              @"atTimescale": [NSNumber numberWithInt:currentTime.timescale],
                              @"target": self.reactTag,
-                             @"seekableDuration": [NSNumber numberWithFloat:CMTimeGetSeconds([self playerItemSeekableTimeRange].duration)],
+                             @"seekableDuration": [self calculateSeekableDuration],
                             });
    }
 }
@@ -223,6 +226,16 @@ static NSString *const timedMetadata = @"timedMetadata";
     }
   }
   return [NSNumber numberWithInteger:0];
+}
+
+- (NSNumber *)calculateSeekableDuration
+{
+    CMTimeRange timeRange = [self playerItemSeekableTimeRange];
+    if (CMTIME_IS_NUMERIC(timeRange.duration))
+    {
+        return [NSNumber numberWithFloat:CMTimeGetSeconds(timeRange.duration)];
+    }
+    return [NSNumber numberWithInteger:0];
 }
 
 - (void)addPlayerItemObservers
